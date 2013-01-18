@@ -25,6 +25,8 @@ public class Nopol {
 		int nDocs = 0;
 		int nErrors = 0;
 
+		long tStart = System.currentTimeMillis();
+		
 		DataInputStream inStream = loadInputFile(inFile);
 
 		TarWriter writer = new TarWriter(outFile);
@@ -48,9 +50,14 @@ public class Nopol {
 				e.printStackTrace();
 			}
 		}
-
 		writer.close();
 		System.err.printf("Records written: %d. Errors: %d\n", nDocs, nErrors);
+		
+		double tTotal = (System.currentTimeMillis() - tStart) / 1000.0;
+		double recSec = nDocs / tTotal;
+		
+		System.err.printf("%.4f seconds. %.4f records/sec\n", tTotal, recSec);
+		
 	}
 
 	public static void processDir(File inputDir, File outDir) throws IOException {
