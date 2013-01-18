@@ -20,7 +20,7 @@ def get_dir_pairs(base_out_dir, base_in_dir, in_dirs):
         d_relative = os.path.relpath(d_abs, base_in_dir)
         out_d = os.path.join(base_out_dir, d_relative)
 
-        d_id = d.replace('/', '.')
+        d_id = d_relative.replace('/', '.')
         yield d_id, (d_abs, out_d)
 
 
@@ -43,7 +43,7 @@ queue
         err_file = os.path.join(logdir, '%s.err' % id_dir)
         log_file = os.path.join(logdir, '%s.log' % id_dir)
 
-        print tpl % (exe, in_dir, out_dir, err_file, log_file)
+        print tpl % (exe, in_dir, out_dir, out_file, err_file, log_file)
 
 def main():
     parser = argparse.ArgumentParser()
