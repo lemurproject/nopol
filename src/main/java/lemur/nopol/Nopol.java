@@ -51,9 +51,12 @@ public class Nopol {
 			}
 		}
 		writer.close();
-		System.err.printf("Records written: %d. Errors: %d\n", nDocs, nErrors);
+		System.err.printf("%s records: %d errors: %d\n", 
+				 outFile.getAbsolutePath(), nDocs, nErrors);
+		System.out.printf("%s %s\n", outFile.getAbsolutePath(), nDocs);
 		
 		double tTotal = (System.currentTimeMillis() - tStart) / 1000.0;
+		tTotal += 0.00000001;
 		double recSec = nDocs / tTotal;
 		
 		System.err.printf("%.4f seconds. %.4f records/sec\n", tTotal, recSec);
