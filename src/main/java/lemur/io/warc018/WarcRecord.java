@@ -1,11 +1,38 @@
-package lemur.nopol.io;
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+package lemur.io.warc018;
+
+/**
+ * Warc file parser.
+ * 
+ * (C) 2009 - Carnegie Mellon University
+ * 
+ * 1. Redistributions of this source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ * 2. The names "Lemur", "Indri", "University of Massachusetts",  
+ *    "Carnegie Mellon", and "lemurproject" must not be used to 
+ *    endorse or promote products derived from this software without
+ *    prior written permission. To obtain permission, contact 
+ *    license@lemurproject.org.
+ *
+ * 4. Products derived from this software may not be called "Lemur" or "Indri"
+ *    nor may "Lemur" or "Indri" appear in their names without prior written
+ *    permission of The Lemur Project. To obtain permission,
+ *    contact license@lemurproject.org.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE LEMUR PROJECT AS PART OF THE CLUEWEB09
+ * PROJECT AND OTHER CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
+ * NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY 
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS 
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ * 
+ * @author mhoy@cs.cmu.edu (Mark J. Hoy)
  */
-
-//package edu.cmu.lemurproject;
-
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -16,17 +43,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
-// import org.apache.commons.logging.Log;
-// import org.apache.commons.logging.LogFactory;
+
 
 /**
+ * A parser of WARC files according to the version 0.18 of the specification.
+ *
+ * This is the format used for Clueweb09 and it is not compatible with the 
+ * latest version of the format. For that reason, we add explicitly its
+ * version number to the package name.
  *
  * @author mhoy
  */
 public class WarcRecord {
 
-  // public static final Log LOG = LogFactory.getLog(WarcRecord.class);
-  
   public static String WARC_VERSION = "WARC/0.18";
   public static String WARC_VERSION_LINE = "WARC/0.18\n";
   private static String NEWLINE="\n";

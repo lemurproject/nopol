@@ -32,7 +32,7 @@
  * @author mhoy@cs.cmu.edu (Mark J. Hoy)
  */
 
-package lemur.nopol.io;
+package lemur.io.warc018;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class WarcHTMLResponseRecord {
 
@@ -62,7 +63,8 @@ public class WarcHTMLResponseRecord {
             .compile("[fF][rR][aA][mM][eE].+?[sS][rR][cC]=['\"](.*?)['\"].*?");
     private static Pattern IFRAME_SRC_PATTERN = Pattern
             .compile("[iI][fF][rR][aA][mM][eE].+?[sS][rR][cC]=['\"](.*?)['\"].*?");
-    private static Pattern HTTP_START_PATTERN = Pattern.compile("^[hH][tT][tT][pP][sS]?://.*");
+    private static Pattern HTTP_START_PATTERN = Pattern
+            .compile("^[hH][tT][tT][pP][sS]?://.*");
 
     // create our pattern set
     private Vector<Pattern> patternSet = new Vector<Pattern>();
@@ -112,7 +114,7 @@ public class WarcHTMLResponseRecord {
     public boolean isValid() {
         return warcRecord != null && getTargetTrecID() != null;
     }
-    
+
     public WarcRecord getRawRecord() {
         return warcRecord;
     }
@@ -234,7 +236,8 @@ public class WarcHTMLResponseRecord {
     }
 
     /**
-     * Returns a a vector with the lines of the content. 
+     * Returns a a vector with the lines of the content.
+     * 
      * @return
      * @throws IOException
      */
@@ -242,10 +245,10 @@ public class WarcHTMLResponseRecord {
         ArrayList<String> retVec = new ArrayList<String>();
         byte[] contentBytes = warcRecord.getContent();
 
-        if (contentBytes == null){
+        if (contentBytes == null) {
             return retVec;
         }
-        
+
         ByteArrayInputStream contentStream = new ByteArrayInputStream(contentBytes);
         BufferedReader inReader = new BufferedReader(new InputStreamReader(contentStream));
 
