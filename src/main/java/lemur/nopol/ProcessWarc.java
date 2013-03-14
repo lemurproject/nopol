@@ -1,50 +1,31 @@
 package lemur.nopol;
 
-import java.io.DataInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.zip.GZIPInputStream;
 
-import lemur.nopol.WarcLoader.WarcEntry;
-import lemur.nopol.io.Cw09Loader;
-import lemur.nopol.io.Cw12Loader;
+import lemur.nopol.ResponseIterator.WarcEntry;
 import lemur.nopol.io.TarWriter;
 
 /**
+ * Command line tool for creating .tar.gz files from WARC files.
  * 
+ * It simply adds one entry to the tar for each WARC response record. The
+ * content is the body of the record (without WARC and HTML headers). The
+ * entries are named ${WARC-TREC-ID}.html, where ${WARC-TREC-ID} is the value of
+ * that header.
  * 
- *
  */
 public class ProcessWarc {
 
-    public static final byte Space = (byte)' ';
-
     /**
-     * Process the content from a WarcEntry. 
-     * 
-     * It simply replaces the HTTP headers with spaces.
-     * 
-     * @param content
-     * @return
+     * Replace HTTP headers by whitespace.
      */
-    public static byte[] processContent(byte[] content) {
+    public static boolean HEADERS_AS_WS = true;
 
-        // Find when the body of the document starts.
-        int bodyStart = 0;
-        for (int i=0; i < content.length - 1; i++){
-            if (content[i] == '\n' && content[i+1] == '\n'){
-                bodyStart = i+2;
-                break;
-            }
-        }
-        Arrays.fill(content, 0, bodyStart, Space);
-        return content;
-    }
-    
-    public static void processFile(WarcLoader loader, File inFile, File outFile) throws IOException {
+    public static void processFile(File inFile, File outFile) throws IOException {
         int n = -1;
         int nDocs = 0;
         int nErrors = 0;
@@ -52,14 +33,33 @@ public class ProcessWarc {
         long tStart = System.currentTimeMillis();
 
         TarWriter writer = new TarWriter(outFile);
-        Iterator<WarcEntry> entries = loader.loadFile(inFile);
-        
-        while (entries.hasNext()){
+
+        FileInputStream input = new FileInputStream(inFile);
+        ResponseIterator entries = new ResponseIterator(input);
+
+        while (entries.hasNext()) {
             try {
+                // Create a TAR record for each entry in the WARC file.
                 WarcEntry entry = entries.next();
-                //byte[] processed = processContent(entry.content);
-                byte[] processed = entry.content;
-                
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(
+                        entry.httpHeader.length + entry.content.length);
+
+                // Output HTTP headers or whitespace
+                if (HEADERS_AS_WS) {
+                    byte[] headerWS = new byte[entry.httpHeader.length];
+                    Arrays.fill(headerWS, (byte) ' ');
+                    // Add a new line character to the end to simplify debugging
+                    headerWS[headerWS.length - 1] = (byte) '\n';
+                    bos.write(headerWS);
+                } else {
+                    bos.write(entry.httpHeader);
+                }
+
+                bos.write(entry.content);
+                bos.close();
+                byte[] processed = bos.toByteArray();
+
                 writer.writeRecord(entry.trecId, processed);
                 nDocs++;
             } catch (Exception e) {
@@ -68,6 +68,7 @@ public class ProcessWarc {
                 e.printStackTrace();
             }
         }
+        entries.close();
         writer.close();
         System.err.printf("%s records: %d errors: %d\n", outFile.getAbsolutePath(),
                 nDocs, nErrors);
@@ -83,13 +84,12 @@ public class ProcessWarc {
 
     /**
      * Processes all the .warc.gz files in a directory.
-     *  
-     * @param loader
+     * 
      * @param inputDir
      * @param outDir
      * @throws IOException
      */
-    public static void processDir(WarcLoader loader, File inputDir, File outDir) throws IOException {
+    public static void processDir(File inputDir, File outDir) throws IOException {
         File[] inputFiles = inputDir.listFiles();
 
         for (File inputFile : inputFiles) {
@@ -97,37 +97,28 @@ public class ProcessWarc {
             File outFile = new File(outDir, outFname);
             System.err.printf("Input file: %s\nOutput file: %s\n",
                     inputFile.getAbsolutePath(), outFile.getAbsolutePath());
-            processFile(loader, inputFile, outFile);
+            processFile(inputFile, outFile);
         }
     }
 
     public static void usageAndExit() {
-        System.err.println("Usage: cw09|cw12 file|dir input output");
+        System.err.println("Usage: file|dir input output");
         System.exit(1);
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 4) {
+        if (args.length != 3) {
             usageAndExit();
         }
-        String format = args[0];
-        String type = args[1];
-        File inputArg = new File(args[2]);
-        File outArg = new File(args[3]);
-        
-        WarcLoader loader = null;
-        if (format.equalsIgnoreCase("cw09")){
-            loader = new Cw09Loader();
-        } else if (format.equalsIgnoreCase("cw12")){
-            loader = new Cw12Loader();
-        } else {
-            usageAndExit();
-        }
-        
+
+        String type = args[0];
+        File inputArg = new File(args[1]);
+        File outArg = new File(args[2]);
+
         if (type.equals("file")) {
-            processFile(loader, inputArg, outArg);
+            processFile(inputArg, outArg);
         } else if (type.equals("dir")) {
-            processDir(loader, inputArg, outArg);
+            processDir(inputArg, outArg);
         } else {
             usageAndExit();
         }
