@@ -140,7 +140,8 @@ class JobDag(object):
     def __init__(self, groups):
         self.jobs = []
         self.groups = []
-
+        self.jfinal = Job('/bin/echo', ['Finished.'])
+        self.jfinal_fname = 'final.condor'
         n_j = 0
         for gid, g in enumerate(groups, 1):
             group = set()
@@ -157,6 +158,7 @@ class JobDag(object):
             jend_fname = 'g%s-end.condor' % gid
 
             self.groups.append( (gid, (jstart, jstart_fname), (jend, jend_fname), group) )
+
 
     def jobdef(self):
         jobs = []
@@ -177,6 +179,12 @@ class JobDag(object):
 
             deps.append('PARENT %s CHILD %s' % (jstart_id, ' '.join(group)))
             deps.append('PARENT %s CHILD %s' % (' '.join(group), jend_id))
+
+            j_start_next_id = 'start_%s' % (gid + 1)
+            deps.append('PARENT %s CHILD %s' % (jend_id, j_start_next_id))
+
+        jfinal_id = 'start_%s' % (gid + 1)
+        jobs.append('Job %s %s' % (jfinal_id, self.jfinal_fname))
 
         rtn = self.dag_tpl % {
             'jobs': '\n'.join(jobs),
@@ -199,12 +207,13 @@ class JobDag(object):
             jstart_job.to_file(opath(jstart_fname))
             jend_job.to_file(opath(jend_fname))
 
+        self.jfinal.to_file(opath(self.jfinal_fname))
+
         fname = opath('dag.condor') 
         with open(fname, 'w+') as fp:
             fp.write(self.jobdef())
 
         return fname
-
 
 
 def create_dag(n_parallel, outdir, jobs):

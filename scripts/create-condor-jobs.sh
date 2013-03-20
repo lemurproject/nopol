@@ -52,8 +52,6 @@ create_jobs() {
 
     for step in `ls -1 $jobdir/steps/dir-*`; do
         step_name="$ds-`basename $step`"
-        step_logdir=$logdir/$step_name
-        mkdir -p $step_logdir
         python $dir/alelante.py dirs $EXE $ds_out $logdir $dsroot \
             --input_file=$step > $jobdir/steps/job-$step_name.condor
     done
