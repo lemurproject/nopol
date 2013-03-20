@@ -6,22 +6,30 @@ set -e
 
 dir=$(cd $(dirname $0); pwd)
 
-EXE=$dir/dummy-exe.sh
+jobsdir=$1
+outdir=$2
+EXE=$3
 
-OUT_DIR=$dir/dummy-out
-mkdir -p $OUT_DIR
+if [[ ! -d $jobsdir ]] || [[ ! -d $outdir ]]; then
+    echo "Usage jobsdir outdir [executable]";
+    echo ""
+    echo "  jobsdir: A directory with the following files: "
+    echo "           cw09-root.txt"
+    echo "           cw09-dirlist.txt"
+    echo "           cw12-root.txt"
+    echo "           cw12-dirlist.txt"
+    exit 1
+fi
+
+if [[ -z $EXE ]]; then
+    EXE=$dir/../process-warc.sh
+fi
 
 # Number of directories to process on each job
 N_STEPS=5
 
 # Number of jobs to run in parallel
-N_PAR=5
-
-outdir=$dir/condor-jobs
-
-mkdir -p $outdir
-
-#$dir/create-dir-lists.sh $outdir
+N_PAR=10
 
 #
 
@@ -29,42 +37,44 @@ create_jobs() {
     ds=$1
     echo $ds
 
-    dirs=$outdir/$ds-dirlist.txt
-    counts=$outdir/$ds-counts.txt
-    dsroot="`cat $outdir/$ds-root.txt`"
+    dirs=$jobsdir/$ds-dirlist.txt
+    counts=$jobsdir/$ds-counts.txt
+    # Root for the input directory (ie. CW09|12 root directory) 
+    dsroot="`cat $jobsdir/$ds-root.txt`"
 
-    ds_out=$OUT_DIR/$ds
+    # Output directory
+    ds_out=$outdir/$ds
     mkdir -p $ds_out
 
-    jobdir=$outdir/$ds
-    mkdir -p $jobdir
+    job_ds_dir=$jobsdir/$ds
+    mkdir -p $job_ds_dir
 
     if [[ ! -f $dirs ]]; then
         echo "$dirs file does not exist"
         exit 1
     fi
 
-    logdir=$jobdir/log
+    logdir=$job_ds_dir/log
     mkdir -p $logdir
 
     # Split the directory list
-    mkdir -p $jobdir/steps
-    split -l $N_STEPS $dirs $jobdir/steps/dir-
+    mkdir -p $job_ds_dir/steps
+    split -l $N_STEPS $dirs $job_ds_dir/steps/dir-
 
-    for step in `ls -1 $jobdir/steps/dir-*`; do
+    for step in `ls -1 $job_ds_dir/steps/dir-*`; do
         step_name="$ds-`basename $step`"
-        python $dir/alelante.py dirs $EXE $ds_out $logdir $dsroot \
-            --input_file=$step > $jobdir/steps/job-$step_name.condor
+        $dir/alelante.py dirs $EXE $ds_out $logdir $dsroot \
+            --input_file=$step > $job_ds_dir/steps/job-$step_name.condor
     done
 
-    mkdir -p $jobdir/dag
-    python $dir/alelante.py dag -p $N_PAR $jobdir/dag $jobdir/steps/job*.condor
+    mkdir -p $job_ds_dir/dag
+    $dir/alelante.py dag -p $N_PAR $job_ds_dir/dag $job_ds_dir/steps/job*.condor
 
-    echo "Done. DAG created in $jobdir/dag"
+    echo "Done. DAG created in $job_ds_dir/dag"
 
 }
 
-
-
 create_jobs cw09
+
+create_jobs cw12
 

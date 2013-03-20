@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 '''
 A script to generate Condor scripts that execute commands in parallel
 on multiple files or directories.
@@ -11,6 +11,10 @@ import fileinput
 import itertools as it
 import shutil
 import argparse
+
+from os.path import join as pjoin
+from os.path import abspath
+
 
 def read_arg_list(fname):
     '''Reads a list of arguments passed as a file'''
@@ -28,7 +32,7 @@ def get_dir_pairs(base_out_dir, base_in_dir, in_dirs):
             print >> sys.stderr, 'Directory does not exist: %s' % d_abs
 
         d_relative = os.path.relpath(d_abs, base_in_dir)
-        out_d = os.path.join(base_out_dir, d_relative)
+        out_d = pjoin(base_out_dir, d_relative)
 
         d_id = d_relative.replace('/', '.')
         yield d_id, (d_abs, out_d)
@@ -52,9 +56,9 @@ log = %s
 queue
 '''
     for id_dir, (in_dir, out_dir) in dir_pairs:
-        out_file = os.path.join(logdir, '%s.out' % id_dir)
-        err_file = os.path.join(logdir, '%s.err' % id_dir)
-        log_file = os.path.join(logdir, '%s.log' % id_dir)
+        out_file = abspath(pjoin(logdir, '%s.out' % id_dir))
+        err_file = abspath(pjoin(logdir, '%s.err' % id_dir))
+        log_file = abspath(pjoin(logdir, '%s.log' % id_dir))
 
         print tpl % (exe, in_dir, out_dir, out_file, err_file, log_file)
 
@@ -70,9 +74,9 @@ log = %s
 queue
 '''
     for id_file, fname in enumerate(fnames):
-        out_file = os.path.join(logdir, '%s.out' % id_file)
-        err_file = os.path.join(logdir, '%s.err' % id_file)
-        log_file = os.path.join(logdir, '%s.log' % id_file)
+        out_file = abspath(pjoin(logdir, '%s.out' % id_file))
+        err_file = abspath(pjoin(logdir, '%s.err' % id_file))
+        log_file = abspath(pjoin(logdir, '%s.log' % id_file))
 
         print tpl % (exe, fname, out_file, err_file, log_file)
 
@@ -194,7 +198,7 @@ class JobDag(object):
 
     def to_file(self, outdir):
 
-        opath = lambda d: os.path.join(outdir, d)
+        opath = lambda d: abspath(pjoin(outdir, d))
 
         for (jid, jfname) in self.jobs:
             child_fname = opath(os.path.basename(jfname))

@@ -24,5 +24,5 @@ if [[ ! -d $outdir ]]; then
     mkdir -p $outdir
 fi
 
-$java -cp $DIR/target/nopol-assembly-0.2.jar lemur.nopol.ProrcessWarc dir $indir $outdir
+$java -cp $DIR/target/nopol-assembly-0.2.jar lemur.nopol.ProcessWarc dir $indir $outdir
 
