@@ -1,52 +1,86 @@
 
-=====
 nopol
 =====
 
-A set of tools to process the annotations of the Clueweb datasets.
+Tools for processing annotations on the Clueweb datasets. 
 
-These tools were used to create the version of the dataset that was processed
-externally and to parse and test those annotations to the final output format.
+This project includes tools for the three steps of the process:
 
-# How to use?
+1. Convert the WARC files into the format required to do the annotations.
+2. Convert the annotations into the published format
+3. Test the annotations in the original documents.
 
-## Generating the cleaned dataset
+## Tools
 
-This step consist in genrating a copy of Clueweb
+### Convert the annotations into the published format
 
-## Parsing the annotations
+The original annotations are generated in the following format:
 
-We first convert the original annotations into a format that it's easier to 
-process. This is an example of the original annotations:
+   filename
+   (rest)
 
-    clueweb09-en0000-00-00271.html
-    Fooo	4543	6594	0.00123131231	/m/AAAAA
-    Barr	5221	7522	0.00837645381	/m/XXXXX
+However, the published format is the following (tab separated):
+    
+    docid entity    start end score mid
 
-    clueweb09-en0000-00-00272.html
-    Example	12258	18124	0.00092574045	/m/ZZZZZ
+Use the following command:
 
-Which get converted as follows:
-
-    clueweb09-en0000-00-00271   Fooo     4543	6594	0.00123131231	/m/AAAAA
-    clueweb09-en0000-00-00271   Barr	5221	7522	0.00837645381	/m/XXXXX
-    clueweb09-en0000-00-00272   Example	12258	18124	0.00092574045	/m/ZZZZZ
-
-In both cases, the fields are separated by tabs.
-
-The class FormatAnnotations allows you to convert an initial annotation file:
-
-    cat input | java lemur.nopol.io.google.FormatAnnotations > output
-
-You also can provide the input file name:
-
-    java lemur.nopol.io.google.FormatAnnotations input > output
-
-## Testing the annotations
+    lemur.nopol.io.FormatAnnotations < input.txt > output.tsv
 
 
+### Test the annotations in the original documents
 
-WARC files from the Clueweb datasets 
+This command allows you to test that the annotations match the original 
+documents. For each annotation, the program reads the content of the document
+and it compares the text mentioned in the annotation with the actual text found
+within the offsets. The program does approximate match on the strings, ignoring 
+whitespace, and case differences.
 
-Extracts the records on a WARC file as plain (HTML) files.
+If the annotations do not match, they are compared after reading the document
+using different encodings in the following order:
+
+- UTF-8
+- ISO-8859-1 (HTTP's default)
+- Encoding identified using the ICU library
+
+If there is no match, an error is printed to the standard output. Otherwise
+(i.e. if the texts match), no output is generated.
+
+Command line usage:
+
+    lemur.nopol.TestAnnotations file.warc.gz annotations.tsv
+
+### Convert the WARC files into .tar.gz files
+
+The class ProcessWarc allows you to convert a WARC file into a .tar.gz, where
+for each response record a file entry is added to the tar.gz. The content
+of the file entry corresponds to the body of the WARC record, with some 
+processing steps.
+
+- Each character of the the HTTP headers is replaced by white space    
+- The body is written as it is. 
+
+The file entries have the same size (in bytes) than the actual WARC records. 
+
+Each file entry is named using the WARC header `WARC-TREC-ID` with the
+extension `.html` appended to it.
+
+#### Command line usage:
+
+The program has two modes: reading individual files or reading an entire 
+directory.
+
+Individual files:
+
+    lemur.nopol.ProcessWarc file file.warc.gz output.tar.gz
+
+Directories:
+
+lemur.nopol.ProcessWarc dir input-directory output-directory
+
+
+
+
+
+
 

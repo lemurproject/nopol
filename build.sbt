@@ -16,7 +16,7 @@ libraryDependencies += "net.htmlparser.jericho" % "jericho-html" % "3.3"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.2"
 
-libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.2"s
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.2"
 
 // Include only src/main/java in the compile configuration
 unmanagedSourceDirectories in Compile <<= Seq(javaSource in Compile).join
