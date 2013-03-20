@@ -45,6 +45,7 @@ create_jobs() {
     fi
 
     logdir=$jobdir/log
+    mkdir -p $logdir
 
     # Split the directory list
     mkdir -p $jobdir/steps
