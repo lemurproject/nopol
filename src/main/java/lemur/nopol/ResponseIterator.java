@@ -53,6 +53,9 @@ public class ResponseIterator extends AbstractIterator<WarcEntry> {
     final Iterator<WarcRecord> iter;
     private int errors = 0;
     
+    /** Record offset */
+    private int n = 0;
+    
     public ResponseIterator(FileInputStream input) throws IOException {
         this.input = input;
         this.reader = WarcReaderFactory.getReader(new GZIPInputStream(input));
@@ -75,6 +78,7 @@ public class ResponseIterator extends AbstractIterator<WarcEntry> {
     protected WarcEntry computeNext() {
         while (iter.hasNext()) {
             WarcRecord record = iter.next();
+            n++;
             // Skip records that are not responses
             if (!isResponse(record)){
                 continue;
@@ -94,11 +98,16 @@ public class ResponseIterator extends AbstractIterator<WarcEntry> {
                 byte[] httpHeader = record.getHttpHeader().getHeader();
                 byte[] content = IOUtils.toByteArray(record.getPayloadContent());
                 return new WarcEntry(trecId, content, httpHeader, offset, contentType);
-            } catch (IOException e) {
-                System.err.printf("Error reading record: %s", e);
+            } catch (Exception e) {
+                System.err.printf("Error reading record %d: %s", n, e);
                 errors += 1;
-                return endOfData();
             }
+        }
+        try {
+            reader.close();
+            input.close();
+        } catch (Exception e){
+            // Ignore
         }
         return endOfData();
     }
