@@ -50,25 +50,48 @@ def main():
 
     log_counts = dict(load_log_counts(args.base_dir, args.job_log_dir))
 
-    n_errors = 0
-    n_ok = 0
+    # Number of files with and w/o errors
+    n_files_errors = 0
+    n_files_ok = 0
+
+    # Number of records in the tar and warc files
+    n_rec_tar = 0
+    n_rec_warc = 0
+
     for fname, ref_count in warc_counts:
         if not fname in log_counts:
             print '%s tar.gz missing' % fname
-            n_errors += 1
+            n_files_errors += 1
             continue
 
         tar_count = log_counts[fname]
-        if ref_count != tar_count:
-            print '%s missmatch warc: %d tar: %d' % (fname, ref_count, tar_count)
-            n_errors += 1
-        else:
-            n_ok += 1
 
-    print >> sys.stderr, 'Errors: %10d' % n_errors
-    print >> sys.stderr, 'OK:     %10d' % n_ok
-    status = n_errors > 0 and 1 or 0
+        n_rec_warc += ref_count
+        n_rec_tar += tar_count
+
+        rec_diff = ref_count - tar_count
+
+        if rec_diff != 0:
+            print '%s missmatch diff: %d warc: %d tar: %d' % (
+                fname, rec_diff, ref_count, tar_count)
+            n_files_errors += 1
+        else:
+            n_files_ok += 1
+
+    diff_rec = (n_rec_warc - n_rec_tar)
+    diff_rec_rel = (diff_rec / (n_rec_warc + 0.0)) * 100
+    print >> sys.stderr, 'Records'
+    print >> sys.stderr, 'Expected: %10d' % n_rec_warc
+    print >> sys.stderr, 'Found:    %10d' % n_rec_tar
+    print >> sys.stderr, 'Diff:     %10d (%0.4f %%)' % (diff_rec, diff_rec_rel)
+    print >> sys.stderr, ''
+    print >> sys.stderr, 'Files'
+    print >> sys.stderr, 'Errors: %10d' % n_files_errors
+    print >> sys.stderr, 'OK:     %10d' % n_files_ok
+
+    status = n_files_errors > 0 and 1 or 0
     sys.exit(status)
 
 if __name__ == '__main__':
     main()
+
