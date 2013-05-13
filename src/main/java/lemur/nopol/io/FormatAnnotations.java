@@ -59,7 +59,7 @@ public class FormatAnnotations {
         for (InputStream inputStream : data) {
             LineIterator iter = new LineIterator(inputStream);
             int nErrors = formatLines(iter);
-            System.err.printf("Stream procesed: %d\n", nErrors);
+            System.err.printf("Stream procesed: %d errors\n", nErrors);
         }
         System.err.println("Finished.");
     }

@@ -11,7 +11,9 @@ import java.util.zip.GZIPInputStream;
 import lemur.nopol.util.TarArchiveIterator;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.jwat.common.Payload;
 import org.jwat.warc.WarcReader;
 import org.jwat.warc.WarcReaderFactory;
 import org.jwat.warc.WarcRecord;
@@ -57,13 +59,21 @@ public class TestProcessed {
 
             ArchiveEntry tarEntry = tarIter.next();
 
-            long recSize = record.getPayload().getTotalLength();
-            long entrySize = tarEntry.getSize();
-            if (recSize != entrySize) {
-                errors.add(String.format("Record %d. Sizes do not match. warc=%d tar=%d", n, recSize, entrySize));
-            }
+            try {
+                // Total record size: http header +  content
+                long recSize = record.getPayload().getTotalLength();
 
+                long entrySize = tarEntry.getSize();
+                if (recSize != entrySize) {
+                    errors.add(String.format("Record %d. Sizes do not match. warc=%d tar=%d", n, recSize, entrySize));
+                }
+
+            } catch (Exception e){
+                errors.add(String.format("Error processing record %d: %s. payload=%d",
+                        n, e.getMessage(), record.getPayload()));
+            }
             n += 1;
+           
         }
 
         if (tarIter.hasNext()){
@@ -134,8 +144,6 @@ public class TestProcessed {
             usageAndExit();
         }
         System.err.printf("%d errors\n", errors);
-        int status = (errors > 0) ? 1 : 0;
-        System.exit(status);
     }
 
 }

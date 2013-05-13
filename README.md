@@ -14,14 +14,66 @@ This project includes tools for the three steps of the process:
 
 ### Convert the annotations into the published format
 
-The original annotations are generated in the following format:
+The original annotations are generated in plain text files that contain the 
+output for several documents from ClueWeb. We convert them to another format 
+that makes them easier to process. 
 
-   filename
-   (rest)
+The following is an example of the annotation in the original format:
 
-However, the published format is the following (tab separated):
-    
-    docid entity    start end score mid
+    clueweb09-en0000-00-01198.html
+    VOC     41856   41859   1.4636309e-05   /m/03zbcv
+    US      42670   42672   0.0054688235    /m/09c7w0
+    Birch   42722   42727   8.6088057e-06   /m/0hpx4
+    MDF     42751   42754   5.1136312e-06   /m/01pd_h
+
+    clueweb09-en0000-00-01500.html
+    Illinois Appellate Court        7750    7774    0.00019704235   /m/02z5_ft
+    Lisa Madigan    8996    9008    0.00038186592   /m/04q09d
+
+Each block contains the annotations for a single document; where th first line 
+corresponds to the document ID (WARC-TREC-ID) and each of the next lines are 
+the annotations identified in them. Each annotation has the following format 
+(tab separated):
+
+    text        start-pos  end-pos  probability   freebase-id
+
+`text` is the matched text on the document. This is not exactly the same 
+string, since it may have been transformed: removing additional whitespace or 
+normalizing the characters.
+
+`start-pos` The byte in which the identified entity starts.
+
+`end-pos` The byte in which the identified entity ends.
+
+`probability` A confidence score assigned to the annotation.
+
+`freebase-id` The identifier of the entity in Freebase; it is also knwon as 
+`mid` (Metabase Id). This identifier is used to form the URL the entity in 
+Freebase:
+
+    http://www.freebase.com/m/XXXXX
+
+
+
+## Output format
+
+The annotations are converted to the a format that is easier to process. It 
+just adds the entity identifier on every annotation, as follows (tab 
+separated):
+
+    clueweb09-en0000-00-01500 Illinois Appellate Court        7750    7774    
+    0.00019704235   /m/02z5_ft
+    clueweb09-en0000-00-01500 Lisa Madigan    8996    9008    0.00038186592  
+    /m/04q09d
+
+
+Note that the first field is the actual value of WARC-TREC-ID, without the 
+.html extension.
+
+## Converting the original annotations
+
+The program lemur.cw.ann.FormatAnnotations allows you to convert the original 
+annotations into the output format. It is used as follows:
 
 Use the following command:
 
