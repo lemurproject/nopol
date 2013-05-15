@@ -50,17 +50,18 @@ public class TestRecordCounts {
         Iterator<String> lines = new LineIterator(recCounts);
         while (lines.hasNext()){
             String line = lines.next();
-            String cols[] = line.split("\\W");
+            String cols[] = line.split("\\s+");
             if (cols.length != 2){
-                System.err.printf("Ignoring line: '%s'\n", line);
+                System.err.printf("Ignoring line: '%s' (%d cols)\n", line, cols.length);
             }
             String warcName = cols[0];
             int records = Integer.parseInt(cols[1]);
             String tarName = warcName.replaceAll("\\.warc.gz", ".tar.gz");
             File tarFile = new File(baseDir, tarName);
-            if (tarFile.isFile()){
+            if (!tarFile.isFile()){
                 System.out.printf("%s tar not found\n", warcName);
                 errors += 1;
+                continue;
             }
             int tarEntries = countTarEntries(tarFile);
             if (records != tarEntries){
