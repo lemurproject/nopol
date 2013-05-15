@@ -1,6 +1,6 @@
 
-nopol
-=====
+ClueWeb Annotations
+===================
 
 Tools for processing annotations on the Clueweb datasets. 
 
@@ -54,17 +54,22 @@ Freebase:
     http://www.freebase.com/m/XXXXX
 
 
-
 ## Output format
 
-The annotations are converted to the a format that is easier to process. It 
-just adds the entity identifier on every annotation, as follows (tab 
-separated):
+The annotations are converted to the a format that is easier to process. The 
+format adds two columns at the begining of each line:
 
-    clueweb09-en0000-00-01500 Illinois Appellate Court        7750    7774    
-    0.00019704235   /m/02z5_ft
-    clueweb09-en0000-00-01500 Lisa Madigan    8996    9008    0.00038186592  
-    /m/04q09d
+* Document identifier (WARC-TREC-ID)
+* Original encoding: name of the encoding used to process the entry. The
+  positions of the annotations correspond to the locations byte offsets
+  after processing the file in this encoding.
+
+The following is an example of the format:
+
+    clueweb09-en0000-00-01198   UTF-8  VOC     41856   41859   1.4636309e-05   
+    /m/03zbcv
+    clueweb09-en0000-00-01198   UTF-8  US      42670   42672   0.0054688235    
+/m/09c7w0
 
 
 Note that the first field is the actual value of WARC-TREC-ID, without the 
@@ -73,12 +78,21 @@ Note that the first field is the actual value of WARC-TREC-ID, without the
 ## Converting the original annotations
 
 The program lemur.cw.ann.FormatAnnotations allows you to convert the original 
-annotations into the output format. It is used as follows:
+annotations into the output format. It supports both formats used for the 
+annotations:
 
-Use the following command:
+* Plain text files using the format described above
+* .tar.gz archives that contains plain text files, using the same format
 
-    lemur.nopol.io.FormatAnnotations < input.txt > output.tsv
+The program is a command line utility used as follows:
 
+    lemur.cw.ann.ConvertOriginal tar|text [input1 [input2 ...]] > output.tsv
+    
+Where `inputN` is the an input file, either plain text or .tar.gz, depending on 
+the mode selected. If no input files are specified, the standard input is 
+used.
+
+The annotations are written to the standard output.
 
 ### Test the annotations in the original documents
 
@@ -100,7 +114,10 @@ If there is no match, an error is printed to the standard output. Otherwise
 
 Command line usage:
 
-    lemur.nopol.TestAnnotations file.warc.gz annotations.tsv
+    lemur.cw.ann.DetectEncoding file.warc.gz annotations.tsv[.gz] [debug]
+
+Use 'true' as the last argument to print the annotations that can't be matched to the stderr
+
 
 ### Convert the WARC files into .tar.gz files
 
@@ -128,9 +145,7 @@ Individual files:
 
 Directories:
 
-lemur.nopol.ProcessWarc dir input-directory output-directory
-
-
+    lemur.nopol.ProcessWarc dir input-directory output-directory
 
 
 

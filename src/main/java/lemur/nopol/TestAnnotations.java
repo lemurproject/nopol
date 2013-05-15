@@ -9,11 +9,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+import lemur.cw.ann.Annotation;
+import lemur.cw.ann.util.LineIterator;
 import lemur.nopol.ResponseIterator.WarcEntry;
 import lemur.nopol.encdet.EncDetUils;
 import lemur.nopol.encdet.EncodingDetector;
 import lemur.nopol.encdet.StreamEncodingDetector;
-import lemur.nopol.util.LineIterator;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -73,7 +74,7 @@ public class TestAnnotations {
         FileInputStream input = new FileInputStream(warcFile);
         ResponseIterator entries = new ResponseIterator(input);
 
-        LineIterator lines = new LineIterator(annFile);
+        LineIterator lines = LineIterator.load(annFile);
         Iterator<Annotation> annotations = Annotation.iterator(lines);
 
         WarcEntry entry = null;

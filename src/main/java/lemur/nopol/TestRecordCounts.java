@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import lemur.nopol.util.LineIterator;
+import lemur.cw.ann.util.LineIterator;
 import lemur.nopol.util.TarArchiveIterator;
 
 /**
@@ -47,7 +47,7 @@ public class TestRecordCounts {
 
         int errors = 0;
         
-        Iterator<String> lines = new LineIterator(recCounts);
+        Iterator<String> lines = LineIterator.load(recCounts);
         while (lines.hasNext()){
             String line = lines.next();
             String cols[] = line.split("\\W");

@@ -31,7 +31,6 @@ package lemur.io.warc018;
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE. 
  * 
- * @author mhoy@cs.cmu.edu (Mark J. Hoy)
  */
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -52,7 +51,7 @@ import java.util.Set;
  * latest version of the format. For that reason, we add explicitly its
  * version number to the package name.
  *
- * @author mhoy
+ * @author mhoy@cs.cmu.edu (Mark J. Hoy)
  */
 public class WarcRecord {
 
@@ -70,7 +69,7 @@ public class WarcRecord {
   
   private static String LINE_ENDING="\n";
   
-  private static String readLineFromInputStream(DataInputStream in) throws IOException {
+  public static String readLineFromInputStream(DataInputStream in) throws IOException {
     StringBuilder retString=new StringBuilder();
     boolean found_cr = false;
     boolean keepReading=true;
@@ -156,8 +155,7 @@ public class WarcRecord {
     if (headerBuffer==null) { return null; }
 
     String line=null;
-    boolean foundMark=false;
-    boolean inHeader=true;
+    boolean foundMark=false;    
     byte[] retContent=null;
 
     // cannot be using a buffered reader here!!!!
@@ -174,27 +172,22 @@ public class WarcRecord {
     
     // LOG.info("Found WARC_VERSION");
 
+    int contentLength = -1;
     // then read to the first newline
     // get the content length and set our retContent
-    while (inHeader && ((line=readLineFromInputStream(in))!=null)) {
-      if (line.trim().length()==0) {
-        inHeader=false;
-      } else {
+    for (line = readLineFromInputStream(in).trim(); 
+        line.length() > 0 || contentLength < 0; 
+        line = readLineFromInputStream(in).trim()) {
+      
+      if (line.length() > 0 ) {
         headerBuffer.append(line);
         headerBuffer.append(LINE_ENDING);
-      }
-    }
-
-    // ok - we've got our header - find the content length
-    // designated by Content-Length: <length>
-    String[] headerPieces=headerBuffer.toString().split(LINE_ENDING);
-    int contentLength=-1;
-    for (int i=0; (i < headerPieces.length) && (contentLength < 0); i++) {
-      String[] thisHeaderPieceParts=headerPieces[i].split(":", 2);
-      if (thisHeaderPieceParts.length==2) {
-        if (thisHeaderPieceParts[0].equals("Content-Length")) {
+        
+        // find the content length designated by Content-Length: <length>
+        String[] parts = line.split(":", 2);
+        if (parts.length == 2 && parts[0].equals("Content-Length")) {
           try {
-            contentLength=Integer.parseInt(thisHeaderPieceParts[1].trim());
+            contentLength=Integer.parseInt(parts[1].trim());
             // LOG.info("WARC record content length: " + contentLength);
           } catch (NumberFormatException nfEx) {
             contentLength=-1;
@@ -458,6 +451,22 @@ public class WarcRecord {
   }
   
   @Override
+  /**
+   * Returns a String version of the WARC record. 
+   * The content of the record is decoded to the platform's default charset.
+   *  
+   * !!WARNING!!: printing out the String resulting from this method can 
+   * cause a change in the content byte length due to the decoding of the 
+   * content, making the Content-Length metadata value invalid.
+   * If you wish to preserve the exact bytes of the content, try the following:
+   * 
+   *     DataOutputStream out = new DataOutputStream(System.out);
+   *     out.writeBytes(warcHeader);
+   *     out.writeBytes("\n");
+   *     out.write(w.getContent());
+   *     out.writeBytes("\n");
+   *     out.close();
+   */
   public String toString() {
     StringBuffer retBuffer=new StringBuffer();
     retBuffer.append(warcHeader.toString());

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import lemur.nopol.util.LineIterator;
+import lemur.cw.ann.util.LineIterator;
 
 /**
  * Converts the annotations sent by Google into the format used by ClueWeb.
