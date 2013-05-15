@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package lemur.nopol.util;
+package lemur.cw.ann.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

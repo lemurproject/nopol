@@ -1,4 +1,4 @@
-package lemur.nopol;
+package lemur.cw.ann.io;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
 import lemur.cw.ann.util.AbstractIterator;
-import lemur.nopol.ResponseIterator.WarcEntry;
 
 import org.apache.commons.io.IOUtils;
 import org.jwat.common.HeaderLine;
@@ -28,25 +27,6 @@ public class ResponseIterator extends AbstractIterator<WarcEntry> {
      * Name of the header with the Trec identifier.
      */
     final public static String TREC_ID = "WARC-TREC-ID";
-    
-    /**
-     * (Oh, Java, why you don't have tuples?) 
-     */
-    public static class WarcEntry {
-        public final byte[] content;
-        public final String trecId;
-        public final int contentOffset;
-        public final String contentType;
-        public final byte[] httpHeader;
-
-        public WarcEntry(String trecId, byte[] content, byte[] httpHeader, int contentOffset, String contentType) {
-            this.trecId = trecId;
-            this.content = content;
-            this.httpHeader = httpHeader;
-            this.contentOffset = contentOffset;
-            this.contentType = contentType;
-        }
-    }
     
     private final InputStream input;
     final WarcReader reader;

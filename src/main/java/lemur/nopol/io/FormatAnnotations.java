@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import lemur.nopol.util.LineIterator;
+import lemur.cw.ann.util.LineIterator;
 
 /**
  * Converts the annotations sent by Google into the format used by ClueWeb.
@@ -59,7 +59,7 @@ public class FormatAnnotations {
         for (InputStream inputStream : data) {
             LineIterator iter = new LineIterator(inputStream);
             int nErrors = formatLines(iter);
-            System.err.printf("Stream procesed: %d\n", nErrors);
+            System.err.printf("Stream procesed: %d errors\n", nErrors);
         }
         System.err.println("Finished.");
     }

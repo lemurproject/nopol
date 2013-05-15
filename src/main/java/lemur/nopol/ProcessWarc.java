@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import lemur.nopol.ResponseIterator.WarcEntry;
-import lemur.nopol.io.TarWriter;
+import lemur.nopol.util.TarWriter;
 
 /**
  * Command line tool for creating .tar.gz files from WARC files.

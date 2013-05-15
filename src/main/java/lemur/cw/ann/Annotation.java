@@ -1,8 +1,8 @@
-package lemur.nopol;
+package lemur.cw.ann;
 
 import java.util.Iterator;
 
-import lemur.nopol.util.AbstractIterator;
+import lemur.cw.ann.util.AbstractIterator;
 
 public class Annotation {
 

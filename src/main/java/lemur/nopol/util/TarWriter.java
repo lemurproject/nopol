@@ -1,4 +1,4 @@
-package lemur.nopol.io;
+package lemur.nopol.util;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

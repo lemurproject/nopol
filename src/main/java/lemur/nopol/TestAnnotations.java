@@ -9,11 +9,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+import lemur.cw.ann.Annotation;
+import lemur.cw.ann.util.LineIterator;
 import lemur.nopol.ResponseIterator.WarcEntry;
 import lemur.nopol.encdet.EncDetUils;
 import lemur.nopol.encdet.EncodingDetector;
 import lemur.nopol.encdet.StreamEncodingDetector;
-import lemur.nopol.util.LineIterator;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -64,7 +65,7 @@ public class TestAnnotations {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
-            System.err.println("Usage: TestAnnotations file.warc.gz annotations.txt");
+            System.err.println("Usage: TestAnnotations file.warc.gz annotations.tsv");
             System.exit(1);
         }
         String warcFile = args[0];
@@ -73,13 +74,13 @@ public class TestAnnotations {
         FileInputStream input = new FileInputStream(warcFile);
         ResponseIterator entries = new ResponseIterator(input);
 
-        LineIterator lines = new LineIterator(annFile);
+        LineIterator lines = LineIterator.load(annFile);
         Iterator<Annotation> annotations = Annotation.iterator(lines);
 
         WarcEntry entry = null;
         Annotation ann = null;
 
-        System.out.printf("doc\ttext\tstart\tend\tmatches_utf\tmatches_iso\tmatches_detected\tdetected_charset\tdetected_conf\tmatches_http\thttp_enc\n");
+        System.out.printf("doc\ttext\tstart\tend\tutf_matches\tutf_text\tiso_matches\tiso_text\tdetected_matches\tdetected_text\tdetected_charset\tdetected_conf\thttp_matches\thttp_text\thttp_enc\n");
         
         while (entries.hasNext() && annotations.hasNext()) {
 
@@ -110,12 +111,37 @@ public class TestAnnotations {
 
     }
 
-    static boolean matchText(WarcEntry entry, Annotation ann, String encoding) throws IOException {
+    public static class Match {
+        final String doc;
+        final String ann;
+        final boolean match;
+        
+        // Shortcut for handling match errors (i.e. no text)
+        public static final Match No = new Match(null, null, false);
+        
+        public Match (String doc, String ann, boolean match) {
+            this.doc = doc;
+            this.ann = ann;
+            this.match = match;
+        }
+        
+        
+    }
+    
+    /**
+     * Tests if an annotation matches the text of a document using a given encoding. 
+     * @param entry
+     * @param ann
+     * @param encoding
+     * @return
+     * @throws IOException
+     */
+    static Match matchText(WarcEntry entry, Annotation ann, String encoding) throws IOException {
         String encoded = new String(entry.content, encoding);
         byte[] bytesUtf8 = encoded.getBytes("UTF-8");
         
         if (ann.end > bytesUtf8.length) {
-            return false;
+            return Match.No;
         }
         
         byte[] matched = Arrays.copyOfRange(bytesUtf8, ann.start, ann.end); 
@@ -126,7 +152,7 @@ public class TestAnnotations {
         String cleanedAnn = expWs.matcher(ann.text).replaceAll(" ");
         cleanedAnn = expNonAlpha.matcher(cleanedAnn).replaceAll("");
         
-        return cleaned.equalsIgnoreCase(cleanedAnn);
+        return new Match(cleaned, cleanedAnn, cleaned.equalsIgnoreCase(cleanedAnn));
     }
     
     static CharsetMatch detectEncoding(WarcEntry entry){
@@ -150,9 +176,6 @@ public class TestAnnotations {
         EncodingDetector encDet = new EncodingDetector(streamEncDet, encodingHeader);
 
         String encContent = encDet.getEncoding();
-
-        System.err.printf("From header: %s from page: %s\n", encodingHeader, encContent);
-
         return encContent;
     }
     
@@ -164,37 +187,36 @@ public class TestAnnotations {
                 break;
             }
 
-            boolean matchesUTF8 = matchText(entry, ann, "UTF-8");
+            Match matchesUTF8 = matchText(entry, ann, "UTF-8");
             
-            if (!matchesUTF8) {
-                boolean matchesIso = matchText(entry, ann, "ISO-8859-1");
+            if (!matchesUTF8.match) {
+                Match matchesIso = matchText(entry, ann, "ISO-8859-1");
                 
                 // Detect the encoding
                 CharsetMatch charMatch = detectEncoding(entry);
                 
-                boolean matchesDetected = matchText(entry, ann, charMatch.getName());
+                Match matchesDetected = matchText(entry, ann, charMatch.getName());
                 
-                boolean matchesHttp = false;
+                Match matchesHttp = Match.No;
                 String encHttp = "-";
                 
-                if (!matchesDetected){
+                if (!matchesDetected.match){
                     encHttp = detectHTTPEncoding(entry);
-                    matchesHttp = (encHttp != null) ? matchText(entry, ann, encHttp ) : false;
+                    matchesHttp = (encHttp != null) ? matchText(entry, ann, encHttp ) : Match.No;
                 }
 
-                boolean matchesAny = matchesIso | matchesDetected | matchesHttp;
+                boolean matchesAny = matchesIso.match | matchesDetected.match | matchesHttp.match;
                 
                 if (!matchesAny){
-                    
-                    System.out.printf("%s\t'%s'\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%s\t%s\n", 
+                    System.out.printf("%s\t'%s'\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", 
                             entry.trecId,
                             ann.text, ann.start, ann.end,
-                            matchesUTF8, 
-                            matchesIso,
-                            matchesDetected,
+                            matchesUTF8.match, matchesUTF8.doc, 
+                            matchesIso.match, matchesIso.doc,
+                            matchesDetected.match, matchesDetected.doc,
                             charMatch.getName(),
                             charMatch.getConfidence(),
-                            matchesHttp,
+                            matchesHttp.match, matchesHttp.doc,
                             encHttp);
                 }
             }

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
-import lemur.nopol.util.AbstractIterator;
+import lemur.cw.ann.util.AbstractIterator;
 
 /**
  * An iterator over the <em>response</em> records of a WARC file.
