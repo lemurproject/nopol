@@ -15,6 +15,10 @@ positional arguments:
   outdir       Output directory
   ann_file     Annotation files in .tsv[.gz] format
 
+The script relies a set of files that describe the datasets (CW09 and CW12) and 
+are used to identify the WARC that contains a page. The files are stored in the
+directory 'condor-jobs'.
+
 '''
 
 import sys
@@ -127,7 +131,10 @@ class WarcOutput(object):
             fp.close()
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='''
+        Groups the annotations by the WARC file that included the original pages.'''
+    )
     parser.add_argument('ds', choices=('cw09', 'cw12'), help='Dataset name')
     parser.add_argument('outdir', help='Output directory')
     parser.add_argument('ann_file', nargs='+', help='Annotation files in .tsv[.gz] format')
