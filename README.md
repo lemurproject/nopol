@@ -7,8 +7,9 @@ Tools for processing annotations on the Clueweb datasets.
 This project includes tools for the three steps of the process:
 
 1. Convert the WARC files into the format required to do the annotations.
-2. Convert the annotations into the published format
-3. Test the annotations in the original documents.
+2. Convert the annotations into the published format.
+3. Group the annotations by the source WARC file.
+4. Test the annotations in the original documents.
 
 ## Tools
 
@@ -53,6 +54,20 @@ Freebase:
 
     http://www.freebase.com/m/XXXXX
 
+
+## Group by source WARC file
+
+The original annotations are included in several plain text files that are not
+necessarily aligned to the original WARC files. That is, the text files do not
+follow any naming convention that allows us to quickly identify the source 
+WARC file for the annotations included in them. To simplify the tests and the 
+format conversion, we group the annotations by their source WARC file.
+
+The script `scripts/group-annotations.py`takes as input several annotation 
+files (in .tsv format, optionally gzipped), identifies the name of the WARC 
+file that contains the page and, for each one, creates an output file that 
+contains the annotations included in the respective WARC file. This allows 
+us later to process the annotations and the WARC files in parallel.
 
 ## Output format
 
