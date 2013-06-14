@@ -66,7 +66,7 @@ public class DetectEncoding {
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.err.println("Usage: FixOffsetErrors file.warc.gz annotations.tsv[.gz] [debug]");
+            System.err.println("Usage: DetectEncoding file.warc.gz annotations.tsv[.gz] [debug]");
             System.err.println(
                 "Detects the encoding of each document in the .warc.gz file that matches the annotations." +
                 "\n" +
