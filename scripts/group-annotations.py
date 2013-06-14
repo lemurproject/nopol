@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 '''
 Groups the annotations by the WARC file that included the original pages.
 
