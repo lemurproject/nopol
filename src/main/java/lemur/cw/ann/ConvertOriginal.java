@@ -29,6 +29,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
  */
 public class ConvertOriginal {
 
+    /**
+     * Number of columns in the original files
+     */
+    private static final int NUM_COLUMNS_ORIGINAL = 6;
+
     public static void usage() {
         System.err.println("Usage: tar|text [input1 [input2 ... ]]");
         System.exit(1);
@@ -122,10 +127,11 @@ public class ConvertOriginal {
             if (cols.length == 1) {
                 prevHeader = cols[0];
                 if (prevHeader.endsWith(".html")) {
+                    // Remove the '.html' extension (5 == length('.html'))  
                     prevHeader = prevHeader.substring(0, prevHeader.length() - 5);
                 }
                 continue;
-            } else if (cols.length != 5) {
+            } else if (cols.length != NUM_COLUMNS_ORIGINAL) {
                 // Ignoring line
                 nErrors += 1;
                 System.err.printf("Ignoring line (%d cols): '%s'\n", cols.length, line);
@@ -133,7 +139,7 @@ public class ConvertOriginal {
             }
 
             System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\n", prevHeader, cols[0], cols[1],
-                    cols[2], cols[3], cols[4]);
+                    cols[2], cols[3], cols[4], cols[5]);
         }
         return nErrors;
     }
