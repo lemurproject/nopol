@@ -93,8 +93,8 @@ public class DetectEncoding {
             }
 
             for (Annotation ann: entryAnns.annotations){
-                System.out.printf("%s\t%s\t%s\t%d\t%d\t%8f\t%s\n", entryAnns.warcEntry.trecId, encoding,
-                        ann.text, ann.start, ann.end, ann.score, ann.mId);
+                System.out.printf("%s\t%s\t%s\t%d\t%d\t%8f\t%8f\t%s\n", entryAnns.warcEntry.trecId, encoding,
+                        ann.text, ann.start, ann.end, ann.scoreCtx, ann.scoreInd, ann.mId);
             }
         }
     }
