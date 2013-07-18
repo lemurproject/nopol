@@ -88,8 +88,8 @@ def parse_annotation(line):
         >> ('0202wb', '28')
     '''
     cols = line.split('\t')
-    if len(cols) != 6:
-        raise Exception('Error parsing annotation. Columns %d/6' % len(cols))
+    if len(cols) != 7:
+        raise Exception('Error parsing annotation. Columns %d/7' % len(cols))
 
     name_parts = cols[0].split('-')
     return name_parts[1], name_parts[2]
@@ -115,7 +115,7 @@ class WarcOutput(object):
             os.makedirs(warc_dir)
 
         fname = pjoin(warc_dir, warc_fname)
-        fp = gzip.open(fname, 'w+')
+        fp = gzip.open(fname, 'a+')
         self.fp[ann] = fp
         return fp
 

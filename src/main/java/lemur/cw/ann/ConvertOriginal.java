@@ -138,7 +138,7 @@ public class ConvertOriginal {
                 continue;
             }
 
-            System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\n", prevHeader, cols[0], cols[1],
+            System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n", prevHeader, cols[0], cols[1],
                     cols[2], cols[3], cols[4], cols[5]);
         }
         return nErrors;
