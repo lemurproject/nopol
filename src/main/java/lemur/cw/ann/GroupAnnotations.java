@@ -98,7 +98,7 @@ public class GroupAnnotations {
             line = line.trim();
 
             String path = line.substring(rootPrefix);
-            int fileIndex = path.lastIndexOf('/');
+            int fileIndex = path.lastIndexOf('/') + 1;
             String key = path.substring(fileIndex);
             dirlists.put(key, path);
         }
@@ -123,7 +123,7 @@ public class GroupAnnotations {
         File fileDirLists = new File(baseDir, dataset + "-dirlist.txt");
         Map<String, String> dirlists = loadDirLists(fileRoot, fileDirLists);
 
-        GroupAnnotations grouper = new GroupAnnotations(dataset, baseDir, dirlists);
+        GroupAnnotations grouper = new GroupAnnotations(dataset, outdir, dirlists);
 
         int nFiles = 0;
         int nLines = 0;
@@ -155,9 +155,8 @@ public class GroupAnnotations {
         if (this.dataSet.equals("cw09")) {
             fileName = String.format("%s.ann.tsv", fileNum);
         } else if (this.dataSet.equals("cw12")) {
-            fileName = String.format("'%s-%s.ann.tsv", dirName, fileNum);
+            fileName = String.format("%s-%s.ann.tsv", dirName, fileNum);
         }
-
         File warcDir = new File(outDir, dirLists.get(dirName));
         if (!warcDir.isDirectory()) {
             FileUtils.forceMkdir(warcDir);
