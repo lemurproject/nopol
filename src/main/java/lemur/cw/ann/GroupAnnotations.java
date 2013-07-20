@@ -3,10 +3,7 @@ package lemur.cw.ann;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Groups the annotations by the WARC file that included the original pages.
@@ -38,11 +35,29 @@ public class GroupAnnotations {
         this.dataSet = dataSet;
         this.outDir = outDir;
         this.dirLists = dirLists;
-        this.writers = new HashMap<String, BufferedWriter>();
+        this.writers = createWritersCache(1000);
+    }
+
+    public static Map<String, BufferedWriter> createWritersCache(final int maxSize){
+        return new LinkedHashMap<String, BufferedWriter>(maxSize*4/3, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, BufferedWriter> eldest) {
+                boolean removed = size() > maxSize;
+                if (removed){
+                    BufferedWriter writer = eldest.getValue();
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        System.err.printf("Error closing old entry: %s\n", eldest.getKey());
+                    }
+                }
+                return removed;
+            }
+        };
     }
 
     public static BufferedWriter createWriter(File file) throws FileNotFoundException {
-        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
     }
 
     public static String parseAnnotation(String line) throws Exception {
@@ -111,7 +126,7 @@ public class GroupAnnotations {
             usage();
         }
 
-        int REPORT_EVERY = 10000;
+        int REPORT_EVERY = 1000000;
 
         File baseDir = new File(args[0]);
         String dataset = args[1];
