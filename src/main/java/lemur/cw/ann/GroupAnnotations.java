@@ -144,25 +144,30 @@ public class GroupAnnotations {
         int nLines = 0;
         // Read the input files
         for (String fName : inputFiles) {
-            nFiles++;
-            System.err.printf("Processing file %d/%d %s\n", nFiles, args.length, fName);
-            Iterator<String> lines = FileUtils.lineIterator(new File(fName));
-            while (lines.hasNext()) {
-                String line = lines.next().trim();
-                if (line.length() > 0) {
-                    String key = parseAnnotation(line);
-                    grouper.addAnnotation(key, line);
-                    nLines++;
-                    if (nLines % REPORT_EVERY == 0) {
-                        System.err.printf("%10d lines processed\n", nLines);
+            try{
+                nFiles++;
+                System.err.printf("Processing file %d/%d %s\n", nFiles, inputFiles.length, fName);
+                Iterator<String> lines = FileUtils.lineIterator(new File(fName));
+                while (lines.hasNext()) {
+                    String line = lines.next().trim();
+                    if (line.length() > 0) {
+                        String key = parseAnnotation(line);
+                        grouper.addAnnotation(key, line);
+                        nLines++;
+                        if (nLines % REPORT_EVERY == 0) {
+                            System.err.printf("%10d lines processed\n", nLines);
+                        }
                     }
                 }
+            } catch (Exception e){
+                System.err.printf("Error processing file %s: %s\n", fName, e.getMessage());
+                e.printStackTrace();
             }
         }
         grouper.close();
     }
 
-    public BufferedWriter createWriter(String key) throws IOException {
+    public BufferedWriter createWriter(String key) throws Exception {
         String[] parts = key.split("-");
         String dirName = parts[0];
         String fileNum = parts[1];
@@ -172,7 +177,11 @@ public class GroupAnnotations {
         } else if (this.dataSet.equals("cw12")) {
             fileName = String.format("%s-%s.ann.tsv", dirName, fileNum);
         }
-        File warcDir = new File(outDir, dirLists.get(dirName));
+        String warcBaseDirName = dirLists.get(dirName);
+        if (warcBaseDirName == null){
+            throw new Exception(String.format("Error finding name for key: %s\n", key));
+        }
+        File warcDir = new File(outDir, warcBaseDirName);
         if (!warcDir.isDirectory()) {
             FileUtils.forceMkdir(warcDir);
         }
@@ -183,7 +192,7 @@ public class GroupAnnotations {
         return writer;
     }
 
-    public void addAnnotation(String key, String line) throws IOException {
+    public void addAnnotation(String key, String line) throws Exception {
         BufferedWriter writer = this.writers.get(key);
         if (writer == null) {
             writer = createWriter(key);
