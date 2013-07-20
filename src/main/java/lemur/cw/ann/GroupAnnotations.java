@@ -1,5 +1,6 @@
 package lemur.cw.ann;
 
+import lemur.cw.ann.util.LineIterator;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -147,9 +148,9 @@ public class GroupAnnotations {
             try{
                 nFiles++;
                 System.err.printf("Processing file %d/%d %s\n", nFiles, inputFiles.length, fName);
-                Iterator<String> lines = FileUtils.lineIterator(new File(fName));
-                while (lines.hasNext()) {
-                    String line = lines.next().trim();
+                LineIterator linesIter = LineIterator.load(fName);
+                while (linesIter.hasNext()) {
+                    String line = linesIter.next().trim();
                     if (line.length() > 0) {
                         String key = parseAnnotation(line);
                         grouper.addAnnotation(key, line);
@@ -159,6 +160,7 @@ public class GroupAnnotations {
                         }
                     }
                 }
+                linesIter.close();
             } catch (Exception e){
                 System.err.printf("Error processing file %s: %s\n", fName, e.getMessage());
                 e.printStackTrace();
